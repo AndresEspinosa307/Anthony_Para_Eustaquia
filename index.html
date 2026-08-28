@@ -10,15 +10,20 @@
     --bg-2: #241a14;
     --card: #2c2019;
     --gold: #c9a24b;
+    --gold-bright: #e6c876;
     --gold-dim: #8a713a;
     --red: #7a1f2b;
     --cream: #f0e6d3;
     --cream-dim: #cbbfa8;
     --green: #4f7a4a;
     --wrong: #8f3a3a;
+    --radius: 10px;
+    --shadow-lg: 0 18px 50px rgba(0,0,0,0.55);
+    --ease: cubic-bezier(.22,.9,.32,1);
   }
   *{box-sizing:border-box;}
   html,body{margin:0;padding:0;}
+  html{-webkit-text-size-adjust:100%;}
   body{
     background:
       radial-gradient(ellipse at top, #2a1e17 0%, var(--bg) 55%),
@@ -27,32 +32,80 @@
     font-family: Georgia, 'Times New Roman', serif;
     min-height:100vh;
     display:flex;
-    align-items:center;
+    align-items:flex-start;
     justify-content:center;
-    padding: 28px 14px;
+    padding: 20px 12px 40px 12px;
+    overflow-x:hidden;
+  }
+  ::selection{ background: rgba(201,162,75,0.35); color:#fff; }
+  button{ font-family:inherit; }
+  button:focus-visible, a:focus-visible{
+    outline: 2px solid var(--gold-bright);
+    outline-offset: 2px;
+    border-radius: 4px;
   }
   .stage{
     width:100%;
     max-width:640px;
+    margin: 0 auto;
   }
-  .filmstrip{
+
+  /* TOP BAR: progress + audio, always visible, no overlap */
+  .topbar{
+    display:flex;
+    align-items:center;
+    gap:12px;
+    margin-bottom: 14px;
+  }
+  .progress-wrap{ flex:1; min-width:0; }
+  .progress-label{
     display:flex;
     justify-content:space-between;
-    padding: 0 2px 10px 2px;
+    font-size:11px;
+    letter-spacing:1.5px;
+    text-transform:uppercase;
+    color: var(--gold-dim);
+    margin-bottom:6px;
   }
-  .sprocket{
-    width:10px;height:16px;border-radius:3px;
-    background: var(--bg-2);
-    border:1px solid var(--gold-dim);
-    transition: background .4s ease, box-shadow .4s ease;
+  .progress-label b{ color:var(--gold); font-weight:normal; }
+  .progress-track{
+    height:6px;
+    border-radius:6px;
+    background: rgba(255,255,255,0.06);
+    border:1px solid rgba(201,162,75,0.25);
+    overflow:hidden;
   }
-  .sprocket.filled{
-    background: var(--gold);
-    box-shadow: 0 0 8px rgba(201,162,75,0.7);
+  .progress-fill{
+    height:100%;
+    width:0%;
+    border-radius:6px;
+    background: linear-gradient(90deg, var(--gold-dim), var(--gold-bright));
+    box-shadow: 0 0 10px rgba(201,162,75,0.5);
+    transition: width .5s var(--ease);
   }
+  .btn-audio{
+    flex-shrink:0;
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+    background-color: var(--card);
+    color: var(--gold);
+    border: 1px solid var(--gold-dim);
+    padding: 9px 13px;
+    border-radius: var(--radius);
+    font-family: Georgia, serif;
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.25s ease;
+    white-space:nowrap;
+    min-height:38px;
+  }
+  .btn-audio:hover{ background-color: var(--gold-dim); color: var(--bg); }
+  .btn-audio.ligado{ background-color: var(--green); color: #fff; border-color: var(--green); }
+
   .marquee{
     text-align:center;
-    margin-bottom: 22px;
+    margin-bottom: 20px;
   }
   .marquee .eyebrow{
     letter-spacing: 4px;
@@ -63,7 +116,7 @@
   }
   .marquee h1{
     font-family: 'Playfair Display', Georgia, serif;
-    font-size: clamp(26px, 6vw, 40px);
+    font-size: clamp(24px, 7vw, 40px);
     margin: 0;
     color: var(--gold);
     letter-spacing: 1px;
@@ -72,16 +125,19 @@
   .marquee .sub{
     color: var(--cream-dim);
     font-style: italic;
-    font-size: 15px;
+    font-size: clamp(12px, 3.4vw, 15px);
     margin-top: 8px;
+    padding: 0 6px;
   }
+
   .card{
     background: linear-gradient(180deg, var(--card), #241a14);
     border: 1px solid var(--gold-dim);
-    border-radius: 6px;
-    padding: 22px;
-    box-shadow: 0 18px 50px rgba(0,0,0,0.55), inset 0 0 0 1px rgba(201,162,75,0.06);
+    border-radius: var(--radius);
+    padding: clamp(16px, 4vw, 26px);
+    box-shadow: var(--shadow-lg), inset 0 0 0 1px rgba(201,162,75,0.06);
     position: relative;
+    overflow:hidden;
   }
   .card::before{
     content:"";
@@ -90,12 +146,23 @@
     border-radius:3px;
     pointer-events:none;
   }
+
+  /* SCREEN TRANSITIONS */
+  .screen{
+    animation: screenIn .45s var(--ease);
+  }
+  @keyframes screenIn{
+    from{ opacity:0; transform: translateY(10px); }
+    to{ opacity:1; transform: translateY(0); }
+  }
+  .hidden{ display:none !important; }
+
   /* START SCREEN */
   .start-screen{ text-align:center; }
   .poster-frame{
     width: 100%;
-    max-width: 320px;
-    margin: 0 auto 20px auto;
+    max-width: 300px;
+    margin: 0 auto 18px auto;
     border: 10px solid #0f0b08;
     outline: 2px solid var(--gold-dim);
     border-radius: 2px;
@@ -103,12 +170,13 @@
     box-shadow: 0 14px 40px rgba(0,0,0,0.6);
   }
   .poster-frame img{ display:block; width:100%; height:auto; filter: sepia(0.18) contrast(1.05); }
-  .start-screen p{ color: var(--cream-dim); line-height:1.6; font-size:15px; }
+  .start-screen p{ color: var(--cream-dim); line-height:1.6; font-size: clamp(13px,3.6vw,15px); margin: 0 0 18px 0; }
   .name-highlight{ color: var(--gold); font-weight:bold; }
+
   /* QUESTION SCREEN */
   .q-count{
     font-size:12px; letter-spacing:2px; text-transform:uppercase;
-    color: var(--gold-dim); margin-bottom:10px; text-align:center;
+    color: var(--gold-dim); margin-bottom:14px; text-align:center;
   }
   .still-frame{
     border: 8px solid #0f0b08;
@@ -118,22 +186,25 @@
     margin-bottom:18px;
     box-shadow: 0 10px 30px rgba(0,0,0,0.5);
     position:relative;
+    background:#000;
   }
   .still-frame img{
-    display:block; width:100%; max-height: 320px; object-fit: cover; object-position: center 20%;
+    display:block; width:100%;
+    max-height: min(320px, 42vh);
+    object-fit: cover; object-position: center 20%;
     filter: sepia(0.12) contrast(1.05);
   }
   .still-frame .tag{
     position:absolute; bottom:0; left:0; right:0;
-    background: linear-gradient(0deg, rgba(0,0,0,0.75), transparent);
+    background: linear-gradient(0deg, rgba(0,0,0,0.78), transparent);
     color: var(--gold);
     font-size:11px; letter-spacing:2px; text-transform:uppercase;
-    padding: 18px 10px 8px 10px;
+    padding: 20px 10px 8px 10px;
     text-align:right;
   }
   .question-text{
     font-family: 'Playfair Display', Georgia, serif;
-    font-size: 19px;
+    font-size: clamp(16px, 4.4vw, 19px);
     line-height:1.5;
     color: var(--cream);
     margin-bottom: 18px;
@@ -144,42 +215,56 @@
     background: rgba(240,230,211,0.03);
     border: 1px solid var(--gold-dim);
     color: var(--cream);
-    padding: 12px 16px;
-    border-radius: 4px;
+    padding: 13px 14px;
+    border-radius: var(--radius);
     font-family: Georgia, serif;
-    font-size: 15px;
+    font-size: clamp(13.5px, 3.8vw, 15px);
+    line-height:1.35;
     cursor:pointer;
-    transition: all .2s ease;
+    transition: background .2s ease, border-color .2s ease, transform .15s ease, opacity .3s ease;
     display:flex; align-items:center; gap:10px;
+    min-height:48px;
+    -webkit-tap-highlight-color: transparent;
   }
   .opt-btn:hover:not(:disabled){
     background: rgba(201,162,75,0.12);
     border-color: var(--gold);
     transform: translateX(2px);
   }
+  .opt-btn:active:not(:disabled){ transform: scale(0.99); }
   .opt-btn:disabled{ cursor:default; }
   .opt-letter{
     display:inline-flex; align-items:center; justify-content:center;
-    width:22px; height:22px; border-radius:50%;
+    width:24px; height:24px; border-radius:50%;
     border:1px solid var(--gold-dim);
     font-size:12px; color:var(--gold-dim); flex-shrink:0;
+    transition: all .2s ease;
   }
-  .opt-btn.correct{ background: rgba(79,122,74,0.22); border-color: var(--green); }
+  .opt-btn.correct{ background: rgba(79,122,74,0.22); border-color: var(--green); animation: pulseCorrect .5s var(--ease); }
   .opt-btn.correct .opt-letter{ border-color: var(--green); color:var(--green); background: rgba(79,122,74,0.15); }
-  .opt-btn.wrong{ background: rgba(143,58,58,0.22); border-color: var(--wrong); }
+  .opt-btn.correct::after{ content:"✓"; margin-left:auto; color:var(--green); font-weight:bold; font-size:16px; }
+  .opt-btn.wrong{ background: rgba(143,58,58,0.22); border-color: var(--wrong); animation: shakeWrong .4s var(--ease); }
   .opt-btn.wrong .opt-letter{ border-color: var(--wrong); color:var(--wrong); }
-  .opt-btn.dim{ opacity: 0.45; }
+  .opt-btn.wrong::after{ content:"✕"; margin-left:auto; color:var(--wrong); font-weight:bold; font-size:16px; }
+  .opt-btn.dim{ opacity: 0.4; }
+  @keyframes pulseCorrect{ 0%{ transform:scale(1); } 45%{ transform:scale(1.02); } 100%{ transform:scale(1); } }
+  @keyframes shakeWrong{ 0%,100%{ transform:translateX(0); } 25%{ transform:translateX(-4px); } 75%{ transform:translateX(4px); } }
+
   .feedback{
     margin-top:16px;
     padding: 14px 16px;
     border-left: 3px solid var(--gold);
     background: rgba(201,162,75,0.06);
-    font-size:14px;
+    border-radius: 0 6px 6px 0;
+    font-size: clamp(13px, 3.6vw, 14px);
     color: var(--cream-dim);
     line-height:1.55;
     display:none;
+    opacity:0;
+    transform: translateY(6px);
+    transition: opacity .35s var(--ease), transform .35s var(--ease);
   }
-  .feedback.show{ display:block; }
+  .feedback.show{ display:block; opacity:1; transform:translateY(0); }
   .feedback .verdict{
     display:block;
     font-family:'Playfair Display', Georgia, serif;
@@ -193,18 +278,24 @@
     background: var(--gold);
     color: #1b1410;
     border:none;
-    padding: 13px;
+    padding: 14px;
     font-family: Georgia, serif;
     font-weight:bold;
     letter-spacing: 1px;
     text-transform:uppercase;
     font-size:13px;
-    border-radius:4px;
+    border-radius: var(--radius);
     cursor:pointer;
     display:none;
+    opacity:0;
+    transform: translateY(6px);
+    transition: opacity .35s var(--ease), transform .35s var(--ease), background .2s ease;
+    min-height:48px;
   }
-  .next-btn.show{ display:block; }
-  .next-btn:hover{ background:#dcb75c; }
+  .next-btn.show{ display:block; opacity:1; transform:translateY(0); }
+  .next-btn:hover{ background: var(--gold-bright); }
+  .next-btn:active{ transform: scale(0.99); }
+
   .start-btn{
     margin-top: 6px;
     background: var(--gold);
@@ -216,16 +307,20 @@
     letter-spacing:1.5px;
     text-transform:uppercase;
     font-size:13px;
-    border-radius:4px;
+    border-radius: var(--radius);
     cursor:pointer;
+    min-height:48px;
+    transition: background .2s ease, transform .15s ease;
   }
-  .start-btn:hover{ background:#dcb75c; }
+  .start-btn:hover{ background: var(--gold-bright); }
+  .start-btn:active{ transform: scale(0.98); }
+
   /* RESULT SCREEN */
   .result-screen{ text-align:center; }
   .ticket{
     border: 1px dashed var(--gold-dim);
-    border-radius: 6px;
-    padding: 24px 18px;
+    border-radius: var(--radius);
+    padding: 26px 18px;
     margin: 10px 0 20px 0;
     position:relative;
     background: rgba(201,162,75,0.05);
@@ -233,13 +328,15 @@
   .ticket .eyebrow{ letter-spacing:3px; text-transform:uppercase; font-size:11px; color:var(--gold-dim); }
   .score-big{
     font-family:'Playfair Display', Georgia, serif;
-    font-size: 52px;
+    font-size: clamp(40px, 12vw, 52px);
     color: var(--gold);
-    margin: 6px 0;
+    margin: 8px 0;
+    animation: scoreReveal .6s var(--ease);
   }
+  @keyframes scoreReveal{ from{ opacity:0; transform: scale(0.7); } to{ opacity:1; transform: scale(1); } }
   .score-label{ color: var(--cream-dim); font-size:14px; }
   .verdict-line{
-    font-size:16px; line-height:1.6; color:var(--cream);
+    font-size: clamp(14px, 3.8vw, 16px); line-height:1.6; color:var(--cream);
     margin: 14px 0 6px 0;
     font-style: italic;
   }
@@ -260,44 +357,32 @@
     color: var(--gold-dim);
     letter-spacing:1px;
   }
-  .hidden{ display:none; }
   @media (max-width:420px){
     .gallery{ grid-template-columns: repeat(5,1fr); }
-    .gallery img{ height:36px; }
+    .gallery img{ height:38px; }
+    .topbar{ gap:8px; }
+    .btn-audio{ padding:8px 10px; font-size:11px; }
   }
-  /* Cole dentro da tag <style> */
-  .btn-audio {
-    position: absolute;
-    top: 15px;
-    right: 15px;
-    background-color: var(--card);
-    color: var(--gold);
-    border: 1px solid var(--gold-dim);
-    padding: 6px 12px;
-    border-radius: 4px;
-    font-family: Georgia, serif;
-    font-size: 12px;
-    cursor: pointer;
-    z-index: 10;
-    transition: all 0.3s ease;
-  }
-
-  .btn-audio:hover {
-    background-color: var(--gold-dim);
-    color: var(--bg);
-  }
-
-  .btn-audio.ligado {
-    background-color: var(--green);
-    color: #fff;
-    border-color: var(--green);
+  @media (prefers-reduced-motion: reduce){
+    *{ animation-duration: 0.001s !important; transition-duration: 0.001s !important; }
   }
 </style>
 </head>
 <body>
 
 <div class="stage">
-  <div class="filmstrip" id="filmstrip"></div>
+  <div class="topbar">
+    <div class="progress-wrap">
+      <div class="progress-label">
+        <span id="progress-label-text">Antes de comenzar</span>
+        <b id="progress-label-count"></b>
+      </div>
+      <div class="progress-track" id="progress-track" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" aria-label="Progreso del quiz">
+        <div class="progress-fill" id="progress-fill"></div>
+      </div>
+    </div>
+    <button id="btnAudio" class="btn-audio" onclick="alternarAudio()" aria-pressed="false">🔇 Música</button>
+  </div>
 
   <div class="marquee">
     <div class="eyebrow">— Función especial —</div>
@@ -306,26 +391,20 @@
   </div>
 
   <div class="card">
-    <!-- START -->    
-    <!-- BOTÃO E O ÁUDIO AQUI -->
-    <button id="btnAudio" class="btn-audio" onclick="alternarAudio()">Música: OFF</button>
-    
     <audio id="meuAudio" loop>
-      <!-- Substitua o src pelo nome do seu arquivo de áudio -->
       <source src="1947_ Suite for Solo Piano & Orchestra_ II. Bracken Road.mp3" type="audio/mpeg">
-      Seu navegador não suporta o elemento de áudio.
+      Tu navegador no soporta el elemento de audio.
     </audio>
 
-    <div id="start-screen" class="start-screen">
+    <div id="start-screen" class="screen start-screen">
       <div class="poster-frame">
-        <img id="poster-img" src="" alt="Anthony Hopkins">
+        <img id="poster-img" src="" alt="Fotograma de Anthony Hopkins">
       </div>
-      <p>25 fotogramas con preguntas sobre la vida y las películas de <span class="name-highlight">Sir Anthony Hopkins</span>. Un pequeño quiz hecho especialmente para ti, Eustaquia, con cariño.</p>
+      <p>25 fotogramas con preguntas sobre la vida y las películas de <span class="name-highlight">Sir Anthony Hopkins</span>. Un pequeño quiz hecho especialmente para Eustaquia, con cariño.</p>
       <button class="start-btn" onclick="startQuiz()">Comenzar la función</button>
     </div>
 
-    <!-- QUESTION -->
-    <div id="question-screen" class="hidden">
+    <div id="question-screen" class="screen hidden">
       <div class="q-count" id="q-count"></div>
       <div class="still-frame">
         <img id="q-img" src="" alt="Fotograma de Anthony Hopkins">
@@ -333,18 +412,17 @@
       </div>
       <div class="question-text" id="q-text"></div>
       <div class="options" id="options"></div>
-      <div class="feedback" id="feedback">
+      <div class="feedback" id="feedback" aria-live="polite">
         <span class="verdict" id="feedback-verdict"></span>
         <span id="feedback-text"></span>
       </div>
       <button class="next-btn" id="next-btn" onclick="nextQuestion()">Siguiente escena →</button>
     </div>
 
-    <!-- RESULT -->
-    <div id="result-screen" class="hidden result-screen">
+    <div id="result-screen" class="screen hidden result-screen">
       <div class="ticket">
         <div class="eyebrow">Resultado final</div>
-        <div class="score-big"><span id="final-score"></span> / 10</div>
+        <div class="score-big"><span id="final-score"></span> / 25</div>
         <div class="score-label">respuestas correctas</div>
         <div class="verdict-line" id="final-verdict"></div>
       </div>
@@ -354,6 +432,7 @@
     </div>
   </div>
 </div>
+
 
 <script>
 const QUESTIONS = [{
@@ -526,25 +605,44 @@ const QUESTIONS = [{
 let current = 0;
 let score = 0;
 let answered = false;
+let TOTAL = 0;
+
+function misturarPerguntas(QUESTIONS) {
+  for (let i = QUESTIONS.length - 1; i > 0; i--) {
+    // Gera um índice aleatório de 0 a i
+    const j = Math.floor(Math.random() * (i + 1));
+    // Troca os elementos de posição
+    [QUESTIONS[i], QUESTIONS[j]] = [QUESTIONS[j], QUESTIONS[i]];
+  }
+  return QUESTIONS;
+}
+
+misturarPerguntas(QUESTIONS);
 
 function b64img(s){ return "data:image/jpeg;base64," + s; }
 
-function buildFilmstrip(){
-  const fs = document.getElementById('filmstrip');
-  fs.innerHTML = '';
-  for(let i=0;i<QUESTIONS.length;i++){
-    const s = document.createElement('div');
-    s.className = 'sprocket';
-    s.id = 'sp-'+i;
-    fs.appendChild(s);
+function updateProgress(index, phase){
+  TOTAL = QUESTIONS.length;
+  const track = document.getElementById('progress-track');
+  const fill = document.getElementById('progress-fill');
+  const labelText = document.getElementById('progress-label-text');
+  const labelCount = document.getElementById('progress-label-count');
+  let pct = 0;
+  if(phase === 'question'){
+    pct = Math.round((index / TOTAL) * 100);
+    labelText.textContent = 'Escena ' + (index + 1) + ' de ' + TOTAL;
+    labelCount.textContent = pct + '%';
+  } else if(phase === 'result'){
+    pct = 100;
+    labelText.textContent = 'Función terminada';
+    labelCount.textContent = '100%';
+  } else {
+    pct = 0;
+    labelText.textContent = 'Antes de comenzar';
+    labelCount.textContent = TOTAL + ' preguntas';
   }
-}
-
-function updateFilmstrip(){
-  for(let i=0;i<QUESTIONS.length;i++){
-    const el = document.getElementById('sp-'+i);
-    if(i < current) el.classList.add('filled'); else el.classList.remove('filled');
-  }
+  fill.style.width = pct + '%';
+  track.setAttribute('aria-valuenow', pct);
 }
 
 function startQuiz(){
@@ -563,7 +661,13 @@ function restartQuiz(){
 
 function renderQuestion(){
   answered = false;
-  updateFilmstrip();
+  updateProgress(current, 'question');
+
+  const screen = document.getElementById('question-screen');
+  screen.classList.remove('screen');
+  void screen.offsetWidth;
+  screen.classList.add('screen');
+
   const q = QUESTIONS[current];
   document.getElementById('q-count').textContent = 'Escena ' + (current+1) + ' de ' + QUESTIONS.length;
   document.getElementById('q-img').src = b64img(q.img);
@@ -576,6 +680,7 @@ function renderQuestion(){
   q.opts.forEach((opt, idx) => {
     const btn = document.createElement('button');
     btn.className = 'opt-btn';
+    btn.setAttribute('type', 'button');
     btn.innerHTML = '<span class="opt-letter">'+letters[idx]+'</span><span>'+opt+'</span>';
     btn.onclick = () => selectAnswer(idx);
     optsEl.appendChild(btn);
@@ -602,15 +707,19 @@ function selectAnswer(idx){
   const text = document.getElementById('feedback-text');
   if(idx === q.correct){
     score++;
-    verdict.textContent = '¡Correcto!';
+    verdict.textContent = '✅ ¡Correcto!';
   } else {
-    verdict.textContent = 'Casi...';
+    verdict.textContent = '🎬 Casi...';
   }
   text.textContent = q.fact;
   fb.classList.add('show');
 
-  document.getElementById('next-btn').classList.add('show');
-  document.getElementById('next-btn').textContent = (current === QUESTIONS.length - 1) ? 'Ver resultado final →' : 'Siguiente escena →';
+  const nextBtn = document.getElementById('next-btn');
+  nextBtn.classList.add('show');
+  nextBtn.textContent = (current === QUESTIONS.length - 1) ? 'Ver resultado final →' : 'Siguiente escena →';
+
+  // Lleva la vista al feedback en pantallas pequeñas, sin ser brusco
+  fb.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 }
 
 function nextQuestion(){
@@ -625,13 +734,14 @@ function nextQuestion(){
 function showResult(){
   document.getElementById('question-screen').classList.add('hidden');
   document.getElementById('result-screen').classList.remove('hidden');
-  updateFilmstripFinal();
+  updateProgress(current, 'result');
   document.getElementById('final-score').textContent = score;
 
+  const total = QUESTIONS.length;
   let verdict = '';
-  if(score === 10) verdict = 'Puntuación perfecta. Ni el propio Hannibal Lecter podría haberlo hecho mejor.';
-  else if(score >= 8) verdict = 'Una actuación magistral. Eres una verdadera experta en la obra de Sir Anthony Hopkins.';
-  else if(score >= 5) verdict = 'Muy buena función. Conoces bien su carrera, ¡y aún hay más por descubrir!';
+  if(score === total) verdict = 'Puntuación perfecta. Ni el propio Hannibal Lecter podría haberlo hecho mejor.';
+  else if(score >= Math.ceil(total * 0.8)) verdict = 'Una actuación magistral. Eres una verdadera experta en la obra de Sir Anthony Hopkins.';
+  else if(score >= Math.ceil(total * 0.5)) verdict = 'Muy buena función. Conoces bien su carrera, ¡y aún hay más por descubrir!';
   else verdict = 'Gracias por ver la función. Cada gran fan aprende algo nuevo cada día.';
   document.getElementById('final-verdict').textContent = verdict;
 
@@ -640,34 +750,30 @@ function showResult(){
   QUESTIONS.forEach(q => {
     const img = document.createElement('img');
     img.src = b64img(q.img);
+    img.alt = '';
     gal.appendChild(img);
   });
 }
 
-function updateFilmstripFinal(){
-  for(let i=0;i<QUESTIONS.length;i++){
-    document.getElementById('sp-'+i).classList.add('filled');
-  }
-}
-// Cole dentro da tag <script> existente
-
 function alternarAudio() {
-  var audio = document.getElementById("meuAudio");
-  var botao = document.getElementById("btnAudio");
+  const audio = document.getElementById("meuAudio");
+  const botao = document.getElementById("btnAudio");
 
   if (audio.paused) {
-    audio.play();
-    botao.textContent = "Música: ON 🎵";
+    audio.play().catch(() => {});
+    botao.textContent = "🔊 Música";
     botao.classList.add("ligado");
+    botao.setAttribute('aria-pressed', 'true');
   } else {
     audio.pause();
-    botao.textContent = "Música: OFF 🔇";
+    botao.textContent = "🔇 Música";
     botao.classList.remove("ligado");
+    botao.setAttribute('aria-pressed', 'false');
   }
 }
 
 // init
-buildFilmstrip();
+updateProgress(0, 'start');
 document.getElementById('poster-img').src = b64img(QUESTIONS[6].img);
 </script>
 
